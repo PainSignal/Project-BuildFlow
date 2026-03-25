@@ -83,6 +83,19 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Signup error:", error);
+    
+    // Log more specific error information for debugging
+    if (error instanceof Error) {
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
+    
+    // Check for Prisma-specific errors
+    if (error && typeof error === 'object' && 'code' in error) {
+      console.error("Prisma error code:", (error as any).code);
+    }
+    
     return NextResponse.json(
       { error: "Failed to create account" },
       { status: 500 }
