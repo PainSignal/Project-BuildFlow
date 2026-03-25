@@ -212,7 +212,7 @@ export default function DashboardPage() {
     client: { name: string } | null;
     projectManagerId: string | null;
     projectManager: { id: string; name: string | null } | null;
-    budget: string | null;
+    budget: number | null;
   }) => {
     setEditingProject(project.id);
     setValue("name", project.name);
@@ -220,7 +220,7 @@ export default function DashboardPage() {
     setValue("clientId", project.clientId || "");
     setValue("startDate", project.startDate ? format(new Date(project.startDate), "yyyy-MM-dd") : "");
     setValue("endDate", project.endDate ? format(new Date(project.endDate), "yyyy-MM-dd") : "");
-    setValue("budget", project.budget ? Number(project.budget) : undefined);
+    setValue("budget", project.budget || undefined);
     setValue("projectManagerId", project.projectManagerId || "");
   };
 
@@ -414,7 +414,7 @@ export default function DashboardPage() {
               client: { name: string } | null;
               projectManagerId: string | null;
               projectManager: { id: string; name: string | null } | null;
-              budget: string | null;
+              budget: number | null;
               _count: { tasks: number };
             }) => (
               <Card key={project.id} className="hover:shadow-md transition-shadow">
