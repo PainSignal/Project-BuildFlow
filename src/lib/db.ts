@@ -1,44 +1,34 @@
 import { PrismaClient } from "@prisma/client";
-import { execSync } from "child_process";
 import fs from "fs";
-import path from "path";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-// For Vercel deployment, use /tmp directory and initialize at runtime
+// For Vercel deployment, use /tmp directory
 let dbUrl = process.env.DATABASE_URL;
 
 if (process.env.VERCEL) {
   const tmpDbPath = "/tmp/buildflow.db";
+  const buildDbPath = "./dev.db"; // Database created at build time
   
   // Set DATABASE_URL to point to /tmp
   dbUrl = `file:${tmpDbPath}`;
   
-  // Initialize database on first request if needed
-  if (!globalForPrisma.prisma && !fs.existsSync(tmpDbPath)) {
-    try {
-      console.log("Initializing SQLite database in /tmp...");
-      
-      // Ensure /tmp directory exists
-      if (!fs.existsSync("/tmp")) {
-        fs.mkdirSync("/tmp", { recursive: true });
-      }
-      
-      // Apply schema to create tables using prisma db push
-      const schemaPath = path.join(process.cwd(), "prisma/schema.prisma");
-      if (fs.existsSync(schemaPath)) {
-        execSync(`npx prisma db push --schema=${schemaPath}`, {
-          stdio: "pipe",
-          env: { ...process.env, DATABASE_URL: dbUrl }
-        });
-        console.log("Database schema applied successfully");
-      }
-    } catch (error) {
-      console.error("Failed to initialize database:", error);
-      throw new Error(`Database initialization failed: ${error}`);
-    }
+  // Ensure /tmp directory exists
+  if (!fs.existsSync("/tmp")) {
+    fs.mkdirSync("/tmp", { recursive: true });
+  }
+  
+  // Copy database from build to /tmp if it doesn't exist
+  // This preserves the schema created during build
+  if (!fs.existsSync(tmpDbPath) && fs.existsSync(buildDbPath)) {
+    fs.copyFileSync(buildDbPath, tmpDbPath);
+    console.log("Database copied to /tmp");
+  } else if (!fs.existsSync(tmpDbPath)) {
+    // Create empty database file - schema will be applied on first query
+    fs.writeFileSync(tmpDbPath, "");
+    console.log("Empty database file created in /tmp");
   }
 }
 
