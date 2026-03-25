@@ -21,16 +21,23 @@ if (process.env.VERCEL) {
     try {
       console.log("Initializing SQLite database in /tmp...");
       
-      // Copy migrations to /tmp if they exist
-      const migrationsDir = path.join(process.cwd(), "prisma/migrations");
-      const tmpMigrationsDir = "/tmp/migrations";
+      // Ensure /tmp directory exists
+      if (!fs.existsSync("/tmp")) {
+        fs.mkdirSync("/tmp", { recursive: true });
+      }
       
-      if (fs.existsSync(migrationsDir)) {
-        // We'll apply migrations directly via schema push instead
-        console.log("Database initialized successfully");
+      // Apply schema to create tables using prisma db push
+      const schemaPath = path.join(process.cwd(), "prisma/schema.prisma");
+      if (fs.existsSync(schemaPath)) {
+        execSync(`npx prisma db push --schema=${schemaPath}`, {
+          stdio: "pipe",
+          env: { ...process.env, DATABASE_URL: dbUrl }
+        });
+        console.log("Database schema applied successfully");
       }
     } catch (error) {
       console.error("Failed to initialize database:", error);
+      throw new Error(`Database initialization failed: ${error}`);
     }
   }
 }
