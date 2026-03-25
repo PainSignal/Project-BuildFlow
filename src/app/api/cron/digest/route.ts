@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runDailyDigest, wasDigestSentToday } from "@/lib/digest";
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Vercel Cron endpoint for daily digest emails
  * 

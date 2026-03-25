@@ -3,6 +3,8 @@ import crypto from "crypto";
 import prisma from "@/lib/db";
 import { getPlanTierFromVariant } from "@/lib/lemonsqueezy";
 
+export const dynamic = 'force-dynamic';
+
 // Verify Lemon Squeezy webhook signature
 function verifySignature(payload: string, signature: string): boolean {
   const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
